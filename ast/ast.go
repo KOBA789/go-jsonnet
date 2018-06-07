@@ -201,6 +201,7 @@ type Assert struct {
 // ---------------------------------------------------------------------------
 
 // BinaryOp represents a binary operator.
+//go:generate jsonenums -type=BinaryOp
 type BinaryOp int
 
 // Binary operators
@@ -437,6 +438,7 @@ type LiteralNumber struct {
 // ---------------------------------------------------------------------------
 
 // LiteralStringKind represents the kind of a literal string.
+//go:generate jsonenums -type=LiteralStringKind
 type LiteralStringKind int
 
 // Literal string kinds
@@ -471,6 +473,7 @@ type LiteralString struct {
 // ---------------------------------------------------------------------------
 
 // ObjectFieldKind represents the kind of an object field.
+//go:generate jsonenums -type=ObjectFieldKind
 type ObjectFieldKind int
 
 // Kinds of object fields
@@ -486,6 +489,7 @@ const (
 )
 
 // ObjectFieldHide represents the visibility of an object field.
+//go:generate jsonenums -type=ObjectFieldHide
 type ObjectFieldHide int
 
 // Object field visibilities
@@ -597,6 +601,7 @@ type InSuper struct {
 // ---------------------------------------------------------------------------
 
 // UnaryOp represents a unary operator.
+//go:generate jsonenums -type=UnaryOp
 type UnaryOp int
 
 // Unary operators

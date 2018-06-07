@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -131,6 +132,7 @@ type command int
 const (
 	commandEval = iota
 	commandFmt  = iota
+	commandAst  = iota
 )
 
 type config struct {
@@ -200,6 +202,9 @@ func processArgs(givenArgs []string, config *config, vm *jsonnet.VM) (processArg
 		i++
 	} else if len(args) > 0 && args[i] == "eval" {
 		config.cmd = commandEval
+		i++
+	} else if len(args) > 0 && args[i] == "ast" {
+		config.cmd = commandAst
 		i++
 	}
 
@@ -318,6 +323,8 @@ func processArgs(givenArgs []string, config *config, vm *jsonnet.VM) (processArg
 			} else {
 				remainingArgs = append(remainingArgs, arg)
 			}
+		} else if config.cmd == commandAst {
+			remainingArgs = append(remainingArgs, arg)
 		} else {
 			return processArgsStatusFailure, fmt.Errorf("the Go implementation currently does not support jsonnet fmt")
 		}
@@ -600,6 +607,37 @@ func main() {
 				os.Exit(1)
 			}
 		}
+
+	} else if config.cmd == commandAst {
+		filename := config.inputFiles[0]
+		input, err := readInput(config, &filename)
+		if err != nil {
+			var op string
+			switch typedErr := err.(type) {
+			case *os.PathError:
+				op = typedErr.Op
+				err = typedErr.Err
+			}
+			if op == "open" {
+				fmt.Fprintf(os.Stderr, "Opening input file: %s: %s\n", filename, err.Error())
+			} else if op == "read" {
+				fmt.Fprintf(os.Stderr, "Reading input file: %s: %s\n", filename, err.Error())
+			} else {
+				fmt.Fprintf(os.Stderr, err.Error())
+			}
+			os.Exit(1)
+		}
+		node, err := jsonnet.SnippetToAST(filename, input)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+		json, err := json.MarshalIndent(node, "", "  ")
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+		fmt.Println(string(json))
 
 	} else if config.cmd == commandFmt {
 		// Should already have been caught by processArgs.
